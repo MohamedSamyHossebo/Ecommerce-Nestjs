@@ -9,12 +9,14 @@ import { compare, hash } from 'src/common/security/hash.security';
 import { VerifyEmailDto } from './dto/verify-email-dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { verifyHash } from 'src/common/security/encryption.security';
+import { TokenService } from 'src/common/modules/token/token.security';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<HUserDocument>,
     private readonly mailService: MailService,
+    private readonly tokenService: TokenService,
   ) {}
 
   async register(registerAuthDto: RegisterAuthDto) {
@@ -112,6 +114,30 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new ConflictException('Invalid password');
     }
-    return user;
+
+    const accessToken = await this.tokenService.generateToken({
+      payload: {
+        _id: user._id,
+        role: user.role,
+      },
+      secret: process.env.JWT_ACCESS_SIGNUTURE as string,
+      options: {
+        expiresIn: '30m',
+      },
+    });
+    const refreshToken = await this.tokenService.generateToken({
+      payload: {
+        _id: user._id,
+        role: user.role,
+      },
+      secret: process.env.JWT_REFRESH_SIGNUTURE as string,
+      options: {
+        expiresIn: '7d',
+      },
+    });
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 }
