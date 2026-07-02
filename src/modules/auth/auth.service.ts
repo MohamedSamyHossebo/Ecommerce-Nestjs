@@ -1,3 +1,4 @@
+import { ResendOTPDto } from './dto/resend-otp.dto';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { RegisterAuthDto } from './dto/create-auth.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -71,5 +72,26 @@ export class AuthService {
     const savedUser = await user.save();
 
     return savedUser;
+  }
+
+  async resendOTP(resendOtpDto: ResendOTPDto) {
+    const user = await this.userModel.findOne({ email: resendOtpDto.email });
+    if (!user) {
+      throw new ConflictException('User not found');
+    }
+    if (user.confirmEmail) {
+      throw new ConflictException('Email is already verified');
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOTP = await hash(otp);
+    const expireTime = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
+
+    console.log('Generated OTP:', otp);
+    user.confirmEmailOTP = hashedOTP;
+    user.otpExpiresAt = expireTime;
+
+    const savedUser = await user.save();
+
+    this.mailService.sendVerificationOtp(savedUser.email, otp);
   }
 }
