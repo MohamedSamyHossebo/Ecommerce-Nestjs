@@ -30,7 +30,7 @@ export class RegisterAuthDto {
   })
   lastName!: string;
 
-  @IsEmail({}, { message: 'Email must be a valid email address' })
+  @IsEmail()
   @IsNotEmpty({ message: 'Email is required' })
   @Transform(({ value }) => value.toLowerCase())
   @Transform(({ value }) => value.trim())

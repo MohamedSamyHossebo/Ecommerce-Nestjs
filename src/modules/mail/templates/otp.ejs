@@ -64,8 +64,9 @@
         <p class="title">Your One-Time Password</p>
       </div>
 
+      <% const otpExpires = typeof expiresIn !== 'undefined' ? expiresIn : '10 minutes'; %>
       <p class="message">
-        Use the following code to verify your request. This OTP will expire in <%= expiresIn || '10 minutes' %>.
+        Use the following code to verify your request. This OTP will expire in <%= otpExpires %>.
       </p>
 
       <div class="otp-code"><%= otp %></div>

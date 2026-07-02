@@ -14,6 +14,7 @@ export class MailService {
         template: './otp',
         context: {
           otp: otp,
+          expiresIn: '10 minutes',
         },
       });
       this.logger.log(`Verification OTP email sent to ${email}`);
