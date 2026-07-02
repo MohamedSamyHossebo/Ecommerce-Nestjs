@@ -1,6 +1,7 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Patch } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterAuthDto } from './dto/create-auth.dto';
+import { VerifyEmailDto } from './dto/verify-email-dto';
 
 @Controller('auth')
 export class AuthController {
@@ -12,6 +13,15 @@ export class AuthController {
     return {
       message: 'User registered successfully',
       data: user,
+    };
+  }
+  @Patch('verify-email')
+  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
+
+    const result = await this.authService.verifyEmail(verifyEmailDto);
+    return {
+      message: 'Email verified successfully',
+      data: result,
     };
   }
 }

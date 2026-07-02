@@ -4,7 +4,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { HUserDocument, User } from 'src/DB/Models/user.model';
 import { Model } from 'mongoose';
 import { MailService } from '../mail/mail.service';
-import { hash } from 'src/common/security/hash.security';
+import { compare, hash } from 'src/common/security/hash.security';
+import { VerifyEmailDto } from './dto/verify-email-dto';
 
 @Injectable()
 export class AuthService {
@@ -36,6 +37,39 @@ export class AuthService {
     const savedUser = await newUser.save();
 
     this.mailService.sendVerificationOtp(savedUser.email, otp);
+    return savedUser;
+  }
+
+  async verifyEmail(verifyEmailDto: VerifyEmailDto) {
+    const user = await this.userModel.findOne({ email: verifyEmailDto.email });
+    if (!user) {
+      throw new ConflictException('User not found');
+    }
+
+    if (user.confirmEmail) {
+      throw new ConflictException('Email is already verified');
+    }
+
+    if (!user.confirmEmailOTP) {
+      throw new ConflictException('OTP not found or already used');
+    }
+
+    const isOtpValid = await compare(verifyEmailDto.otp, user.confirmEmailOTP);
+
+    if (!isOtpValid) {
+      throw new ConflictException('Invalid OTP');
+    }
+
+    if (user.otpExpiresAt && user.otpExpiresAt < new Date()) {
+      throw new ConflictException('OTP has expired');
+    }
+
+    user.confirmEmail = new Date();
+    user.confirmEmailOTP = undefined;
+    user.otpExpiresAt = undefined;
+
+    const savedUser = await user.save();
+
     return savedUser;
   }
 }
