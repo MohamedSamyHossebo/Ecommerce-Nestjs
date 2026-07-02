@@ -81,16 +81,16 @@ export class TokenService {
     switch (signatureLevel) {
       case SIGNATURE_ENUM.ADMIN:
         return {
-          accessSignature: process.env.JWT_ADMIN_SECRET || 'admin_secret',
+          accessSignature: process.env.JWT_ADMIN_ACCESS_SIGNUTURE || 'admin_secret',
           refreshSignature:
-            process.env.JWT_REFRESH_ADMIN_SECRET || 'admin_refresh_secret',
+            process.env.JWT_ADMIN_REFRESH_SIGNUTURE || 'admin_refresh_secret',
         };
       case SIGNATURE_ENUM.USER:
       default:
         return {
-          accessSignature: process.env.JWT_USER_SECRET || 'user_secret',
+          accessSignature: process.env.JWT_ACCESS_SIGNUTURE || 'user_secret',
           refreshSignature:
-            process.env.JWT_REFRESH_USER_SECRET || 'user_refresh_secret',
+            process.env.JWT_REFRESH_SIGNUTURE || 'user_refresh_secret',
         };
     }
   }
