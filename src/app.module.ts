@@ -6,6 +6,7 @@ import { resolve } from 'path';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { AuthModule } from './modules/auth/auth.module';
+import { MailModule } from './modules/mail/mail.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -28,6 +29,7 @@ import { AuthModule } from './modules/auth/auth.module';
       }),
     }),
     AuthModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

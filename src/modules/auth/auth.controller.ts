@@ -8,6 +8,10 @@ export class AuthController {
 
   @Post('register')
   async signup(@Body() registerAuthDto: RegisterAuthDto) {
-    this.authService.register(registerAuthDto);
+    const user = await this.authService.register(registerAuthDto);
+    return {
+      message: 'User registered successfully',
+      data: user,
+    };
   }
 }
