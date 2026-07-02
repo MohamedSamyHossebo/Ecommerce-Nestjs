@@ -4,6 +4,8 @@ import { RegisterAuthDto } from './dto/create-auth.dto';
 import { VerifyEmailDto } from './dto/verify-email-dto';
 import { ResendOTPDto } from './dto/resend-otp.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
+import { ForgetPasswordDto } from './dto/forget-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -17,6 +19,7 @@ export class AuthController {
       data: user,
     };
   }
+
   @Patch('verify-email')
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
     const result = await this.authService.verifyEmail(verifyEmailDto);
@@ -41,6 +44,22 @@ export class AuthController {
     return {
       message: 'User logged in successfully',
       data: result,
+    };
+  }
+
+  @Post('forget-password')
+  async forgetPassword(@Body() forgetPasswordDto: ForgetPasswordDto) {
+    const result = await this.authService.forgetPassword(forgetPasswordDto);
+    return {
+      message: result.message,
+    };
+  }
+
+  @Patch('reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    const result = await this.authService.resetPassword(resetPasswordDto);
+    return {
+      message: result.message,
     };
   }
 }

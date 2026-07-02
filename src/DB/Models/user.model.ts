@@ -67,6 +67,18 @@ export class User {
 
   @Prop({
     type: String,
+    default: undefined,
+  })
+  forgetPasswordOTP!: string | undefined;
+
+  @Prop({
+    type: Date,
+    default: undefined,
+  })
+  forgetPasswordOTPExpiresAt!: Date | undefined;
+
+  @Prop({
+    type: String,
     enum: {
       values: Object.values(UserGenderEnum),
       default: UserGenderEnum.MALE,
