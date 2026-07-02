@@ -7,6 +7,8 @@ import { Model } from 'mongoose';
 import { MailService } from '../mail/mail.service';
 import { compare, hash } from 'src/common/security/hash.security';
 import { VerifyEmailDto } from './dto/verify-email-dto';
+import { LoginAuthDto } from './dto/login-auth.dto';
+import { verifyHash } from 'src/common/security/encryption.security';
 
 @Injectable()
 export class AuthService {
@@ -93,5 +95,23 @@ export class AuthService {
     const savedUser = await user.save();
 
     this.mailService.sendVerificationOtp(savedUser.email, otp);
+  }
+
+  async login(loginAuthDto: LoginAuthDto) {
+    const user = await this.userModel.findOne({ email: loginAuthDto.email });
+    if (!user) {
+      throw new ConflictException('User not found');
+    }
+    if (!user.confirmEmail) {
+      throw new ConflictException('Email is not verified');
+    }
+    const isPasswordValid = await verifyHash({
+      plainText: loginAuthDto.password,
+      cipherText: user.password,
+    });
+    if (!isPasswordValid) {
+      throw new ConflictException('Invalid password');
+    }
+    return user;
   }
 }
