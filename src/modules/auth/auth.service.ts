@@ -6,9 +6,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { RegisterAuthDto } from './dto/create-auth.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { HUserDocument, User } from 'src/DB/Models/user.model';
-import { Model } from 'mongoose';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { compare, hash } from 'src/common/security/hash.security';
 import { VerifyEmailDto } from './dto/verify-email-dto';
@@ -22,17 +19,18 @@ import {
   SendForgetPasswordOtpEvent,
   SendVerificationOtpEvent,
 } from '../mail/mail.event-payloads';
+import { UserRepository } from 'src/DB/repos/user.repo';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<HUserDocument>,
+    private readonly userRepo: UserRepository,
     private readonly eventEmitter: EventEmitter2,
     private readonly tokenService: TokenService,
   ) {}
 
   async register(registerAuthDto: RegisterAuthDto) {
-    const existingUser = await this.userModel.findOne({
+    const existingUser = await this.userRepo.findOne({
       email: registerAuthDto.email,
     });
     if (existingUser) {
@@ -45,13 +43,11 @@ export class AuthService {
     const expireTime = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
 
     console.log('Generated OTP:', otp);
-    const newUser = new this.userModel({
+    const savedUser = await this.userRepo.create({
       ...registerAuthDto,
       confirmEmailOTP: hashedOTP,
       otpExpiresAt: expireTime,
     });
-
-    const savedUser = await newUser.save();
 
     this.eventEmitter.emit(
       MailEvents.SEND_VERIFICATION_OTP,
@@ -61,7 +57,7 @@ export class AuthService {
   }
 
   async verifyEmail(verifyEmailDto: VerifyEmailDto) {
-    const user = await this.userModel.findOne({ email: verifyEmailDto.email });
+    const user = await this.userRepo.findOne({ email: verifyEmailDto.email });
     if (!user) {
       throw new ConflictException('User not found');
     }
@@ -94,7 +90,7 @@ export class AuthService {
   }
 
   async resendOTP(resendOtpDto: ResendOTPDto) {
-    const user = await this.userModel.findOne({ email: resendOtpDto.email });
+    const user = await this.userRepo.findOne({ email: resendOtpDto.email });
     if (!user) {
       throw new ConflictException('User not found');
     }
@@ -118,7 +114,7 @@ export class AuthService {
   }
 
   async login(loginAuthDto: LoginAuthDto) {
-    const user = await this.userModel.findOne({ email: loginAuthDto.email });
+    const user = await this.userRepo.findOne({ email: loginAuthDto.email });
     if (!user) {
       throw new ConflictException('User not found');
     }
@@ -160,7 +156,7 @@ export class AuthService {
   }
 
   async forgetPassword(forgetPasswordDto: ForgetPasswordDto) {
-    const user = await this.userModel.findOne({
+    const user = await this.userRepo.findOne({
       email: forgetPasswordDto.email,
     });
     if (!user) {
@@ -189,7 +185,7 @@ export class AuthService {
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
-    const user = await this.userModel.findOne({
+    const user = await this.userRepo.findOne({
       email: resetPasswordDto.email,
     });
     if (!user) {
