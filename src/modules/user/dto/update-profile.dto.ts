@@ -1,4 +1,4 @@
-import { Transform } from 'class-transformer/types/decorators';
+import { Transform } from 'class-transformer';
 import {
   IsString,
   Length,
