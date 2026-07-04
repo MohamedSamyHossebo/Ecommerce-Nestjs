@@ -8,6 +8,7 @@ import { Connection } from 'mongoose';
 import { AuthModule } from './modules/auth/auth.module';
 import { MailModule } from './modules/mail/mail.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { UserModule } from './modules/user/user.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -32,6 +33,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     AuthModule,
     MailModule,
     EventEmitterModule.forRoot(),
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
