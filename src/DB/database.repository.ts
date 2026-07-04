@@ -34,8 +34,9 @@ export abstract class BaseRepository<T extends Document> {
     select: string = '',
     options: QueryOptions = {},
   ): Promise<T | null> {
-    const doc = this.model.findById(id).select(select || '');
+    const doc = this.model.findById(id);
 
+    if (select) doc.select(select);
     if (options.populate)
       doc.populate(
         options.populate as PopulateOptions | (string | PopulateOptions)[],

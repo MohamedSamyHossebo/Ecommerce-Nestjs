@@ -88,19 +88,15 @@ export class User {
 
   @Prop({
     type: String,
-    enum: {
-      values: Object.values(ProviderEnum),
-      default: ProviderEnum.SYSTEM,
-    },
+    enum: Object.values(ProviderEnum),
+    default: ProviderEnum.SYSTEM,
   })
   provider!: string;
 
   @Prop({
     type: String,
-    enum: {
-      values: Object.values(UserRoleEnum),
-      default: UserRoleEnum.USER,
-    },
+    enum: Object.values(UserRoleEnum),
+    default: UserRoleEnum.USER,
   })
   role!: string;
 }
