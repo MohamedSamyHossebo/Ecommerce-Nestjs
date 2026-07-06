@@ -16,6 +16,13 @@ export class Category {
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
+    ref: 'Brand',
+    required: true,
+  })
+  brand!: string;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   })
