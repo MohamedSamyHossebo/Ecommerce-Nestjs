@@ -45,7 +45,7 @@ export class Product {
   createdBy!: string;
 }
 export const ProductSchema = SchemaFactory.createForClass(Product);
-export type HProductModel = HydratedDocument<Product>;
+export type HProductDocument = HydratedDocument<Product>;
 export const ProductModel = MongooseModule.forFeature([
   {
     name: Product.name,

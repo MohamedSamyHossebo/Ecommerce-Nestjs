@@ -22,7 +22,7 @@ export class Category {
   createdBy!: string;
 }
 export const CategorySchema = SchemaFactory.createForClass(Category);
-export type HCategoryModel = HydratedDocument<Category>;
+export type HCategoryDocument = HydratedDocument<Category>;
 export const CategoryModel = MongooseModule.forFeature([
   {
     name: Category.name,

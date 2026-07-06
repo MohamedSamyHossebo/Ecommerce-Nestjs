@@ -29,7 +29,7 @@ export class Brand {
   createdBy!: string;
 }
 export const BrandSchema = SchemaFactory.createForClass(Brand);
-export type HBrandModel = HydratedDocument<Brand>;
+export type HBrandDocument = HydratedDocument<Brand>;
 export const BrandModel = MongooseModule.forFeature([
   {
     name: Brand.name,
