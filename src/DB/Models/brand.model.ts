@@ -6,13 +6,25 @@ import mongoose, { HydratedDocument } from 'mongoose';
   toJSON: { virtuals: true },
 })
 export class Brand {
-  @Prop({ type: String, required: true, trim: true, unique: true })
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
+    unique: true,
+    minlength: 3,
+    maxlength: 20,
+  })
   name!: string;
   @Prop({ type: String, required: true })
   logo!: string;
 
-  @Prop({ type: String, trim: true })
-  description?: string;
+  @Prop({
+    type: String,
+    trim: true,
+    minlength: 10,
+    maxlength: 2000,
+  })
+  description!: string;
 
   @Prop({
     type: [mongoose.Schema.Types.ObjectId],
