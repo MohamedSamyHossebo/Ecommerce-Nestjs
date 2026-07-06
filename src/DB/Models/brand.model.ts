@@ -28,7 +28,6 @@ export class Brand {
 
   @Prop({
     type: [mongoose.Schema.Types.ObjectId],
-    required: true,
     ref: 'Category',
   })
   categories!: string[];
