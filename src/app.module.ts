@@ -9,6 +9,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { MailModule } from './modules/mail/mail.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { UserModule } from './modules/user/user.module';
+import { CategoryModule } from './modules/category/category.module';
+import { BrandModule } from './modules/brand/brand.module';
+import { ProductModule } from './modules/product/product.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -34,6 +37,9 @@ import { UserModule } from './modules/user/user.module';
     MailModule,
     EventEmitterModule.forRoot(),
     UserModule,
+    CategoryModule,
+    BrandModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],
