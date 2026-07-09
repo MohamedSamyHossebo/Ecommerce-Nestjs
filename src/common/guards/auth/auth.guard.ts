@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { TokenService } from 'src/common/modules/token/token.security';
 
 @Injectable()
@@ -19,8 +19,12 @@ export class AuthGuard implements CanActivate {
         return false;
     }
 
-    if (!authorization) return false;
-
+    if (!authorization) {
+      throw new UnauthorizedException(
+        'User not authenticated: Missing Authorization header',
+      );
+    }
+    
     const { user } = await this.tokenService.decodedToken({ authorization });
 
     const request = context.switchToHttp().getRequest();
