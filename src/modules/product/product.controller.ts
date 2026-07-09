@@ -2,10 +2,13 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  Patch,
   Post,
   Query,
   Req,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -15,9 +18,10 @@ import { CreateProductDto } from './dto/createProduct.dto';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 import { RoleGuard } from 'src/common/guards/role/role.guard';
 import { UserRoleEnum } from 'src/common/enums/user.enum';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { UpdateProductDTO } from './dto/update.product.dto';
 
 @Controller('product')
 export class ProductController {
@@ -34,7 +38,7 @@ export class ProductController {
   @Post('create')
   @UseGuards(AuthGuard, RoleGuard(UserRoleEnum.ADMIN))
   @UseInterceptors(
-    FileInterceptor('images', {
+    FilesInterceptor('images', 10, {
       storage: diskStorage({
         destination: './uploads/products',
         filename: (_req, file, cb) => {
@@ -46,17 +50,56 @@ export class ProductController {
   )
   async createProduct(
     @Body() data: CreateProductDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
     @Req() req: Request,
   ) {
     const product = await this.productService.createProduct(
       data,
-      file,
+      files,
       (req as any).user._id,
     );
     return {
       message: 'Product created successfully',
       product,
+    };
+  }
+  @Get(':id')
+  async getProductById(@Param('id') id: string) {
+    const product = await this.productService.getProductById(id);
+    return {
+      message: 'Product fetched successfully',
+      product,
+    };
+  }
+
+  @Patch(':id')
+  @UseGuards(AuthGuard, RoleGuard(UserRoleEnum.ADMIN))
+  @UseInterceptors(
+    FilesInterceptor('images', 10, {
+      storage: diskStorage({
+        destination: './uploads/products',
+        filename: (_req, file, cb) => {
+          const unique = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+          cb(null, `${unique}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  async updateProduct(
+    @Param('id') id: string,
+    @Body() data: UpdateProductDTO,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Req() req: Request,
+  ) {
+    const updatedProduct = await this.productService.updateProduct(
+      id,
+      data,
+      files,
+      (req as any).user._id,
+    );
+    return {
+      message: 'Product updated successfully',
+      updatedProduct,
     };
   }
 }
