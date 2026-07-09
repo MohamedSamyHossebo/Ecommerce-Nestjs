@@ -71,4 +71,11 @@ export class ProductService {
     );
     return updatedPrdouct?.save();
   }
+  async deleteProduct(id: string) {
+    const isExits = await this.productRepo.findById(id);
+    if (!isExits) {
+      throw new BadRequestException('Product not found');
+    }
+    return await this.productRepo.deleteOne({ _id: id });
+  }
 }
