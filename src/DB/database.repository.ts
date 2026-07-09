@@ -1,3 +1,4 @@
+import { PaginationDto } from './../common/dto/pagination.dto';
 import {
   type Document,
   type Model,
@@ -122,5 +123,25 @@ export abstract class BaseRepository<T extends Document> {
 
   async findOneAndDelete(filter: FilterQuery<T> = {}): Promise<T | null> {
     return await this.model.findOneAndDelete(filter);
+  }
+  async paginate(filter: FilterQuery<T> = {}, options: PaginationDto) {
+    const page = options.page || 1;
+    const limit = options.limit || 20;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.model.find(filter).skip(skip).limit(limit).exec(),
+      this.model.countDocuments(filter).exec(),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      hasNextPage: page * limit < total,
+      hasPrevPage: page > 1,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 }
