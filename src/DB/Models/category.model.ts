@@ -1,5 +1,7 @@
 import { MongooseModule, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+
+
 @Schema({
   timestamps: true,
   toObject: { virtuals: true },
@@ -28,6 +30,7 @@ export class Category {
   })
   createdBy!: string;
 }
+
 export const CategorySchema = SchemaFactory.createForClass(Category);
 export type HCategoryDocument = HydratedDocument<Category>;
 export const CategoryModel = MongooseModule.forFeature([
@@ -36,3 +39,28 @@ export const CategoryModel = MongooseModule.forFeature([
     schema: CategorySchema,
   },
 ]);
+// Cascade DELETE Hook
+const cascadeDeleteHook = async function (this: mongoose.Query<any, any>) {
+  const docs = await this.model.find(this.getQuery());
+  if (docs.length > 0) {
+    const categoryIds = docs.map((doc) => doc._id);
+    const ProductModel = this.model.db.model('Product');
+    await ProductModel.deleteMany({ category: { $in: categoryIds } });
+  }
+};
+
+CategorySchema.pre(
+  'deleteOne',
+  { document: false, query: true } as any,
+  cascadeDeleteHook as any,
+);
+CategorySchema.pre(
+  'findOneAndDelete',
+  { document: false, query: true } as any,
+  cascadeDeleteHook as any,
+);
+CategorySchema.pre(
+  'deleteMany',
+  { document: false, query: true } as any,
+  cascadeDeleteHook as any,
+);
