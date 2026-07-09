@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
+import mongoose from 'mongoose';
 
 export class CreateCategoryDTO {
   @IsString()
@@ -11,6 +12,10 @@ export class CreateCategoryDTO {
   @IsString()
   @IsOptional()
   description!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  brand!: mongoose.Types.ObjectId;
 }
 
 export class UpdateCategoryDTO {
@@ -24,4 +29,7 @@ export class UpdateCategoryDTO {
   @IsString()
   @IsOptional()
   description!: string;
+
+  @IsString()
+  brand!: mongoose.Types.ObjectId;
 }

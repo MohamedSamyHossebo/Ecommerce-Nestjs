@@ -124,16 +124,24 @@ export abstract class BaseRepository<T extends Document> {
   async findOneAndDelete(filter: FilterQuery<T> = {}): Promise<T | null> {
     return await this.model.findOneAndDelete(filter);
   }
-  async paginate(filter: FilterQuery<T> = {}, options: PaginationDto) {
+  async paginate(
+    filter: FilterQuery<T> = {},
+    options: PaginationDto & { populate?: any },
+  ) {
     const page = options.page || 1;
     const limit = options.limit || 20;
     const skip = (page - 1) * limit;
 
+    const query = this.model.find(filter).skip(skip).limit(limit);
+
+    if (options.populate) {
+      query.populate(options.populate);
+    }
+
     const [data, total] = await Promise.all([
-      this.model.find(filter).skip(skip).limit(limit).exec(),
+      query.exec(),
       this.model.countDocuments(filter).exec(),
     ]);
-
     return {
       data,
       total,
