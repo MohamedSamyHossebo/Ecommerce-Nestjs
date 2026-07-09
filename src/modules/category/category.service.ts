@@ -48,14 +48,18 @@ export class CategoryService {
     return category;
   }
   async getAllCategories() {
-    const categories = await this.categoryRepo.find();
+    const categories = await this.categoryRepo.find({}, '', {
+      populate: 'brand',
+    });
     if (!categories) {
       return 'Failed to fetch categories';
     }
     return categories;
   }
   async getCategoryById(id: string) {
-    const category = await this.categoryRepo.findById(id);
+    const category = await this.categoryRepo.findById(id, '', {
+      populate: 'brand',
+    });
     if (!category) {
       return 'Failed to fetch category';
     }
