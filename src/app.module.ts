@@ -13,6 +13,7 @@ import { CategoryModule } from './modules/category/category.module';
 import { BrandModule } from './modules/brand/brand.module';
 import { ProductModule } from './modules/product/product.module';
 import { CartModule } from './modules/cart/cart.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -42,6 +43,7 @@ import { CartModule } from './modules/cart/cart.module';
     BrandModule,
     ProductModule,
     CartModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
