@@ -124,6 +124,10 @@ export abstract class BaseRepository<T extends Document> {
   async findOneAndDelete(filter: FilterQuery<T> = {}): Promise<T | null> {
     return await this.model.findOneAndDelete(filter);
   }
+
+  async findByIdAndDelete(id: string): Promise<T | null> {
+    return await this.model.findByIdAndDelete(id);
+  }
   async paginate(
     filter: FilterQuery<T> = {},
     options: PaginationDto & { populate?: any },

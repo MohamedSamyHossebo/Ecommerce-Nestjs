@@ -50,6 +50,12 @@ export class CouponsService {
 
     return updated;
   }
+  async delete(id: string) {
+    const deleted = this.couponRepository.findByIdAndDelete(id);
+    if (!deleted) throw new NotFoundException('Coupon not found');
+
+    return deleted;
+  }
   async validateCoupone(code: string, userId: string) {
     const coupon = await this.couponRepository.findOne({
       code: code.toUpperCase().trim(),
@@ -71,3 +77,4 @@ export class CouponsService {
     return { valid: true, coupon };
   }
 }
+  

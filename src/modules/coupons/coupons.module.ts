@@ -3,10 +3,11 @@ import { CouponsService } from './coupons.service';
 import { CouponsController } from './coupons.controller';
 import { CouponRepository } from 'src/DB/repos/coupons.repo';
 import { CouponModel } from 'src/DB/Models/coupons.model';
+import { TokenModule } from 'src/common/modules/token/token.module';
 
 @Module({
   controllers: [CouponsController],
   providers: [CouponsService, CouponRepository],
-  imports: [CouponModel],
+  imports: [CouponModel,TokenModule],
 })
 export class CouponsModule {}
