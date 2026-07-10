@@ -10,10 +10,6 @@ import {
 
 export class CreateReviewDto {
   @IsMongoId()
-  @IsNotEmpty({ message: 'userId is required' })
-  userId!: string;
-
-  @IsMongoId()
   @IsNotEmpty({ message: 'productId is required' })
   productId!: string;
 
