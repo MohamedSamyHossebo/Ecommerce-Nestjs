@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -26,7 +27,7 @@ export class CartController {
   }
 
   @Post()
-  async addToCart(@Req() req: Request, dto: AddToCartDTO) {
+  async addToCart(@Req() req: Request, @Body() dto: AddToCartDTO) {
     const userId = (req as any).user._id;
     return await this.cartService.addToCart(userId, dto);
   }

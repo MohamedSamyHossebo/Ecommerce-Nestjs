@@ -68,6 +68,11 @@ export class CartService {
       (item) => item.product.toString() === product,
     );
 
+    const effectivePrice =
+      foundProduct.discountPrice > 0
+        ? foundProduct.price - foundProduct.discountPrice
+        : foundProduct.price;
+
     if (existingItemIndex > -1) {
       const targetNewQuantity =
         cart.items[existingItemIndex].quantity + quantity;
@@ -77,12 +82,13 @@ export class CartService {
         );
       }
       cart.items[existingItemIndex].quantity = targetNewQuantity;
+      cart.items[existingItemIndex].pricePerUnit = effectivePrice;
     } else {
       cart.items.push({
         product,
         quantity,
-        pricePerUnit: foundProduct.price,
-        subTotal: foundProduct.price * quantity,
+        pricePerUnit: effectivePrice,
+        subTotal: effectivePrice * quantity,
       });
     }
     this.recalculateCartTotal(cart);
