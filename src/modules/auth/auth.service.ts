@@ -20,6 +20,7 @@ import {
   SendVerificationOtpEvent,
 } from '../mail/mail.event-payloads';
 import { UserRepository } from 'src/DB/repos/user.repo';
+import { UserRoleEnum } from 'src/common/enums/user.enum';
 
 @Injectable()
 export class AuthService {
@@ -129,12 +130,22 @@ export class AuthService {
       throw new ConflictException('Invalid password');
     }
 
+    const isAdmin = user.role === UserRoleEnum.ADMIN;
+
+    const accessSecret = isAdmin
+      ? (process.env.JWT_ADMIN_ACCESS_SIGNUTURE as string)
+      : (process.env.JWT_ACCESS_SIGNUTURE as string);
+
+    const refreshSecret = isAdmin
+      ? (process.env.JWT_ADMIN_REFRESH_SIGNUTURE as string)
+      : (process.env.JWT_REFRESH_SIGNUTURE as string);
+
     const accessToken = await this.tokenService.generateToken({
       payload: {
         _id: user._id,
         role: user.role,
       },
-      secret: process.env.JWT_ACCESS_SIGNUTURE as string,
+      secret: accessSecret,
       options: {
         expiresIn: '30m',
       },
@@ -144,7 +155,7 @@ export class AuthService {
         _id: user._id,
         role: user.role,
       },
-      secret: process.env.JWT_REFRESH_SIGNUTURE as string,
+      secret: refreshSecret,
       options: {
         expiresIn: '7d',
       },

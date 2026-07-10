@@ -11,7 +11,10 @@ import {
 import { CartService } from './cart.service';
 import { AddToCartDTO } from './dto/addToCart.dto';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
-@UseGuards(AuthGuard)
+import { RoleGuard } from 'src/common/guards/role/role.guard';
+import { UserRoleEnum } from 'src/common/enums/user.enum';
+
+@UseGuards(AuthGuard, RoleGuard(UserRoleEnum.USER, UserRoleEnum.ADMIN))
 @Controller('cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}

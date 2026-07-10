@@ -9,6 +9,6 @@ export const TOKEN_TYPE_ENUM = {
 };
 
 export const SIGNATURE_ENUM = {
-  ADMIN: 'admin',
-  USER: 'user',
+  ADMIN: 'Admin',
+  USER: 'User',
 };

@@ -4,8 +4,8 @@ export enum ProviderEnum{
 }
 
 export enum UserRoleEnum{
-    ADMIN = 'ADMIN',
-    USER = 'USER'
+    ADMIN = 'Admin',
+    USER = 'User'
 }
 export enum UserGenderEnum{
     MALE = 'MALE',

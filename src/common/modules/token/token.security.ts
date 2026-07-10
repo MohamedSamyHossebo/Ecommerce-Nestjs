@@ -55,7 +55,7 @@ export class TokenService {
     }
 
     const signatureLevel =
-      prefix === 'Admin' ? SIGNATURE_ENUM.ADMIN : SIGNATURE_ENUM.USER;
+      prefix === SIGNATURE_ENUM.ADMIN ? SIGNATURE_ENUM.ADMIN : SIGNATURE_ENUM.USER;
     const signature = await this.getSignature({ signatureLevel });
     const decoded = await this.verifyToken({
       token,
