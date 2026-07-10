@@ -21,6 +21,7 @@ import { UserRoleEnum } from 'src/common/enums/user.enum';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { CacheInterceptor } from 'src/cache/interceptors/cache.interceptor';
 
 @Controller('category')
 export class CategoryController {
@@ -52,10 +53,12 @@ export class CategoryController {
   }
 
   @Get('all')
+  @UseInterceptors(CacheInterceptor)
   async getAllCategories() {
     return this.categoryService.getAllCategories();
   }
   @Get(':id')
+  @UseInterceptors(CacheInterceptor)
   async getCategoryById(@Param('id') id: string) {
     return this.categoryService.getCategoryById(id);
   }

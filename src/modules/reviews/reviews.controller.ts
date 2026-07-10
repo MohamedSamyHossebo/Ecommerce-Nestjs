@@ -9,6 +9,7 @@ import {
   Query,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -17,12 +18,14 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 import { RoleGuard } from 'src/common/guards/role/role.guard';
 import { UserRoleEnum } from 'src/common/enums/user.enum';
+import { CacheInterceptor } from 'src/cache/interceptors/cache.interceptor';
 
 @Controller('reviews')
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
   @Get('product/:productId')
+  @UseInterceptors(CacheInterceptor)
   async findAll(
     @Param('productId') productId: string,
     @Query() query: PaginationDto,
@@ -36,7 +39,10 @@ export class ReviewsController {
 
   @UseGuards(AuthGuard, RoleGuard(UserRoleEnum.USER, UserRoleEnum.ADMIN))
   @Post()
-  async create(@Req() req: Request, @Body() dto: CreateReviewDto): Promise<any> {
+  async create(
+    @Req() req: Request,
+    @Body() dto: CreateReviewDto,
+  ): Promise<any> {
     const userId = (req as any).user._id;
     const review = await this.reviewsService.create(dto, userId);
     return {
@@ -62,7 +68,10 @@ export class ReviewsController {
 
   @UseGuards(AuthGuard, RoleGuard(UserRoleEnum.USER, UserRoleEnum.ADMIN))
   @Delete(':reviewId')
-  async remove(@Req() req: Request, @Param('reviewId') reviewId: string): Promise<any> {
+  async remove(
+    @Req() req: Request,
+    @Param('reviewId') reviewId: string,
+  ): Promise<any> {
     const userId = (req as any).user._id;
     const review = await this.reviewsService.remove(reviewId, userId);
     return {
