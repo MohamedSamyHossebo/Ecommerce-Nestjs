@@ -17,7 +17,7 @@ export class OrderService {
     private couponeRepo: CouponRepository,
   ) {}
   async checkout(createOrderDto: CreateOrderDto, userId: string) {
-    const cart = await this.cartRepo.findById(userId);
+    const cart = await this.cartRepo.findOne({ user: userId });
     if (!cart || cart.items.length === 0) {
       throw new BadRequestException('Cart is empty');
     }
@@ -84,7 +84,7 @@ export class OrderService {
       items: orderItems,
       subTotal: calculatedSubTotal,
       discountAmount,
-      finalPrice,
+      totalPrice: finalPrice,
       shippingAddress: createOrderDto.shippingAddress,
       appliedCoupon: targetCoupone?._id || null,
       status: OrderStatus.PENDING,
