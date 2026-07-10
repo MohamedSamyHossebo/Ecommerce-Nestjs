@@ -1,4 +1,13 @@
-import { Controller, Post, Body, Req, UseGuards, Get, Param, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+  Get,
+  Param,
+  Patch,
+} from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
@@ -8,28 +17,32 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
   @Post('checkout')
   @UseGuards(AuthGuard)
-  create(@Body() dto: CreateOrderDto, @Req() req: any) {
+  async create(@Body() dto: CreateOrderDto, @Req() req: any) {
     const userId = req.user._id;
-    return this.orderService.checkout(dto, userId);
+    const order = await this.orderService.checkout(dto, userId);
+    return { message: 'Order created successfully', order };
   }
   @Get()
   @UseGuards(AuthGuard)
-  getMyOrders(@Req() req: any) {
+  async getMyOrders(@Req() req: any) {
     const userId = req.user._id;
-    return this.orderService.getMyOrders(userId);
+    const orders = await this.orderService.getMyOrders(userId);
+    return { message: 'Orders fetched successfully', orders };
   }
 
   @Get(':id')
   @UseGuards(AuthGuard)
-  getOrderById(@Param('id') id: string, @Req() req: any) {
+  async getOrderById(@Param('id') id: string, @Req() req: any) {
     const userId = req.user._id;
-    return this.orderService.getOrderById(id, userId);
+    const order = await this.orderService.getOrderById(id, userId);
+    return { message: 'Order fetched successfully', order };
   }
 
   @Patch(':id/cancel')
   @UseGuards(AuthGuard)
-  cancelOrder(@Param('id') id: string, @Req() req: any) {
+  async cancelOrder(@Param('id') id: string, @Req() req: any) {
     const userId = req.user._id;
-    return this.orderService.cancelOrder(id, userId);
+    const order = await this.orderService.cancelOrder(id, userId);
+    return { message: 'Order cancelled successfully', order };
   }
 }
