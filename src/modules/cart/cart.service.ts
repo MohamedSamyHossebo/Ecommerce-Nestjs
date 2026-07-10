@@ -112,6 +112,9 @@ export class CartService {
     if (!cart) {
       throw new NotFoundException('Cart Not Found');
     }
+    if (cart.items.length === 0) {
+      throw new BadRequestException('Cart Is Empty');
+    }
     cart.items = [];
     this.recalculateCartTotal(cart);
     await cart.save();
