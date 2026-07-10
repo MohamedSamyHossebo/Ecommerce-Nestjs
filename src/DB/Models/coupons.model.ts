@@ -19,11 +19,8 @@ export class Coupon {
   @Prop({ required: true, type: Number, min: 1 })
   maxUsage!: number;
 
-  @Prop({ required: true, type: Number, min: 0 })
+  @Prop({ type: Number, min: 0, default: 0 })
   usedCount!: number;
-
-  @Prop({ required: true })
-  isActive!: boolean;
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

@@ -14,6 +14,7 @@ import { BrandModule } from './modules/brand/brand.module';
 import { ProductModule } from './modules/product/product.module';
 import { CartModule } from './modules/cart/cart.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { CouponsModule } from './modules/coupons/coupons.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -44,6 +45,7 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
     ProductModule,
     CartModule,
     ReviewsModule,
+    CouponsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
