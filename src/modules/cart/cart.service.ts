@@ -117,4 +117,64 @@ export class CartService {
     await cart.save();
     return cart.populate('items.product');
   }
+  async increaseCartItemQuantity(
+    userId: string,
+    productId: string,
+    quantity: number,
+  ) {
+    const cart = await this.cartRepo.findOne({ user: userId });
+    if (!cart) {
+      throw new NotFoundException('Cart Not Found');
+    }
+    const existingItemIndex = cart.items.findIndex(
+      (item) => item.product.toString() === productId,
+    );
+    if (existingItemIndex === -1) {
+      throw new NotFoundException('Item Not Found');
+    }
+    const foundProduct = await this.productRepo.findById(productId);
+    if (!foundProduct) {
+      throw new NotFoundException('Product Not Found');
+    }
+    const targetNewQuantity = cart.items[existingItemIndex].quantity + quantity;
+    if (targetNewQuantity > foundProduct.stock) {
+      throw new BadRequestException(
+        `Not Enough Stock , the amount of stock is ${foundProduct.stock.toString()}`,
+      );
+    }
+    cart.items[existingItemIndex].quantity = targetNewQuantity;
+    this.recalculateCartTotal(cart);
+    await cart.save();
+    return cart.populate('items.product');
+  }
+  async decreaseCartItemQuantity(
+    userId: string,
+    productId: string,
+    quantity: number,
+  ) {
+    const cart = await this.cartRepo.findOne({ user: userId });
+    if (!cart) {
+      throw new NotFoundException('Cart Not Found');
+    }
+    const existingItemIndex = cart.items.findIndex(
+      (item) => item.product.toString() === productId,
+    );
+    if (existingItemIndex === -1) {
+      throw new NotFoundException('Item Not Found');
+    }
+    const targetNewQuantity = cart.items[existingItemIndex].quantity - quantity;
+    if (targetNewQuantity < 0) {
+      throw new BadRequestException(
+        `Not Enough Stock , the amount of stock is ${cart.items[existingItemIndex].quantity.toString()}`,
+      );
+    }
+    if (cart.items.length === 1 && targetNewQuantity === 0) {
+      await this.clearCart(userId);
+      return;
+    }
+    cart.items[existingItemIndex].quantity = targetNewQuantity;
+    this.recalculateCartTotal(cart);
+    await cart.save();
+    return cart.populate('items.product');
+  }
 }

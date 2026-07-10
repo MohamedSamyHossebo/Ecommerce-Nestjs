@@ -46,4 +46,32 @@ export class CartController {
     const userId = (req as any).user._id;
     return await this.cartService.clearCart(userId);
   }
+
+  @Patch('increase/:productId')
+  async increaseCartItemQuantity(
+    @Req() req: Request,
+    @Param('productId') productId: string,
+    @Body('quantity') quantity: number,
+  ) {
+    const userId = (req as any).user._id;
+    return await this.cartService.increaseCartItemQuantity(
+      userId,
+      productId,
+      quantity,
+    );
+  }
+
+  @Patch('decrease/:productId')
+  async decreaseCartItemQuantity(
+    @Req() req: Request,
+    @Param('productId') productId: string,
+    @Body('quantity') quantity: number,
+  ) {
+    const userId = (req as any).user._id;
+    return await this.cartService.decreaseCartItemQuantity(
+      userId,
+      productId,
+      quantity,
+    );
+  }
 }
