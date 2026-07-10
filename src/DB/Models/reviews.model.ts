@@ -39,6 +39,7 @@ export class Review {
   productId!: string;
 }
 export const ReviewSchema = SchemaFactory.createForClass(Review);
+ReviewSchema.index({ userId: 1, productId: 1 }, { unique: true });
 export type HReviewDocument = HydratedDocument<Review>;
 export const ReviewsModel = MongooseModule.forFeature([
   {
