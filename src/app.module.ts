@@ -15,6 +15,7 @@ import { ProductModule } from './modules/product/product.module';
 import { CartModule } from './modules/cart/cart.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { CouponsModule } from './modules/coupons/coupons.module';
+import { OrderModule } from './modules/order/order.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -46,6 +47,7 @@ import { CouponsModule } from './modules/coupons/coupons.module';
     CartModule,
     ReviewsModule,
     CouponsModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [AppService],
