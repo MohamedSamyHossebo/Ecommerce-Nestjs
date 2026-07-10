@@ -96,4 +96,39 @@ export class OrderService {
     await cart.save();
     return order;
   }
+
+  async getMyOrders(userId: string) {
+    return this.orderRepo.find({ user: userId });
+  }
+
+  async getOrderById(orderId: string, userId: string) {
+    const order = await this.orderRepo.findOne({ _id: orderId, user: userId });
+    if (!order) {
+      throw new BadRequestException('Order not found');
+    }
+    return order;
+  }
+
+  async cancelOrder(orderId: string, userId: string) {
+    const order = await this.orderRepo.findOne({ _id: orderId, user: userId });
+    if (!order) {
+      throw new BadRequestException('Order not found');
+    }
+    
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException(`Cannot cancel order in ${order.status} status`);
+    }
+
+    order.status = OrderStatus.CANCELLED;
+    
+    // Restock products
+    for (const item of order.items) {
+      await this.productRepo.findByIdAndUpdate(item.product, {
+        $inc: { stock: item.qty },
+      });
+    }
+
+    await order.save();
+    return order;
+  }
 }
