@@ -26,17 +26,17 @@ export class CouponsController {
     return this.couponsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.couponsService.findOne(id);
-  }
-
+  
   @UseGuards(RoleGuard(UserRoleEnum.ADMIN))
   @Post()
   create(@Body() createCouponDto: CreateCouponDto, @Req() req: any) {
     return this.couponsService.create(createCouponDto, req.user._id as string);
   }
-
+  
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.couponsService.findOne(id);
+  }
   @UseGuards(RoleGuard(UserRoleEnum.ADMIN))
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCouponDto: UpdateCouponDto) {

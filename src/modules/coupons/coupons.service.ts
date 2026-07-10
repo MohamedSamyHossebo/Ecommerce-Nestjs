@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -31,17 +32,21 @@ export class CouponsService {
     return this.couponRepository.find({}, '', {
       populate: {
         path: 'createdBy',
-        select: 'firstName LastName email',
+        select: 'firstName lastName email',
       },
     });
   }
   async findOne(id: string) {
-    return this.couponRepository.findById(id, '', {
+    const coupon = await this.couponRepository.findById(id, '', {
       populate: {
         path: 'createdBy',
-        select: 'firstName LastName email',
+        select: 'firstName lastName email',
       },
     });
+
+    if (!coupon) throw new NotFoundException('Coupon not found');
+
+    return coupon;
   }
   async update(id: string, dto: UpdateCouponDto) {
     const updated = this.couponRepository.findByIdAndUpdate(id, dto);
@@ -77,4 +82,3 @@ export class CouponsService {
     return { valid: true, coupon };
   }
 }
-  
