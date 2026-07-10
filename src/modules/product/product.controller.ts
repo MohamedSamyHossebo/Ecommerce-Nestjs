@@ -23,12 +23,13 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { UpdateProductDTO } from './dto/update.product.dto';
+import { CacheInterceptor } from 'src/cache/interceptors/cache.interceptor';
 
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
-
   @Get('all')
+  @UseInterceptors(CacheInterceptor)
   async getAllProducts(@Query() query: PaginationDto) {
     const products = await this.productService.getAllProducts(query);
     return {
@@ -65,6 +66,7 @@ export class ProductController {
     };
   }
   @Get(':id')
+  @UseInterceptors(CacheInterceptor)
   async getProductById(@Param('id') id: string) {
     const product = await this.productService.getProductById(id);
     return {
