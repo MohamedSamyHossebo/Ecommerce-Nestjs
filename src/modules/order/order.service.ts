@@ -8,6 +8,8 @@ import { HCouponDocument } from 'src/DB/Models/coupons.model';
 import { CouponRepository } from 'src/DB/repos/coupons.repo';
 import { OrderStatus } from 'src/common/enums/order.enum';
 import { SocketService } from 'src/socket/socket.service';
+import { PaymentService } from 'src/common/services/payment/payment.service';
+import Stripe from 'stripe';
 
 @Injectable()
 export class OrderService {
@@ -17,6 +19,7 @@ export class OrderService {
     private productRepo: ProductRepository,
     private couponeRepo: CouponRepository,
     private _socketService: SocketService,
+    private paymentService: PaymentService,
   ) {}
   async checkout(createOrderDto: CreateOrderDto, userId: string) {
     const cart = await this.cartRepo.findOne({ user: userId });
@@ -114,12 +117,37 @@ export class OrderService {
       appliedCoupon: targetCoupone?._id || null,
       status: OrderStatus.PENDING,
     });
+    await order.populate('user');
+    const amount = order.totalPrice ?? order.subTotal ?? 0;
+    const line_items = [
+      {
+        price_data: {
+          currency: 'egp',
+          product_data: {
+            name: `Order By ${(order.user as any)?.firstName} ${(order.user as any)?.lastName}`,
+            description: `Order Address ${JSON.stringify(order.shippingAddress)}`,
+          },
+          unit_amount: amount * 100,
+        },
+        quantity: 1,
+      },
+    ];
+    const session = await this.paymentService.checkoutSetion({
+      customer_email: (order.user as any)?.email,
+      line_items: line_items,
+      success_url: process.env.SUCCESS_URL! as string,
+      cancel_url: process.env.CANCEL_URL! as string,
+      mode: 'payment',
+      discounts: [],
+      metadata: { orderId: order._id.toString() },
+    });
+    (order as any).paymentSession = session.url;
     await order.save();
 
     cart.items = [];
     cart.totalPrice = 0;
     await cart.save();
-    return order;
+    return { session: session.url, order };
   }
 
   async getMyOrders(userId: string) {
@@ -157,5 +185,28 @@ export class OrderService {
 
     await order.save();
     return order;
+  }
+
+  async handleWebhook(rawBody: Buffer, signature: string) {
+    let event: Stripe.Event;
+    try {
+      event = this.paymentService.constructWebhookEvent(
+        rawBody,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET as string,
+
+      );
+    } catch {
+      throw new BadRequestException('Invalid webhook signature');
+    }
+
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const orderId = session.metadata?.orderId;
+      if (!orderId) return;
+      await this.orderRepo.findByIdAndUpdate(orderId, {
+        status: OrderStatus.PAID,
+      });
+    }
   }
 }

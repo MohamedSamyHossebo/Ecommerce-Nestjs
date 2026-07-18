@@ -7,6 +7,8 @@ import {
   Get,
   Param,
   Patch,
+  Headers,
+  RawBodyRequest,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -21,6 +23,15 @@ export class OrderController {
     const userId = req.user._id;
     const order = await this.orderService.checkout(dto, userId);
     return { message: 'Order created successfully', order };
+  }
+
+  @Post('webhook')
+  async stripeWebhook(
+    @Req() req: any,
+    @Headers('stripe-signature') signature: string,
+  ) {
+    await this.orderService.handleWebhook(req.rawBody as Buffer, signature);
+    return { received: true };
   }
   @Get()
   @UseGuards(AuthGuard)

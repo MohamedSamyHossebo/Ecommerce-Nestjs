@@ -12,6 +12,7 @@ import { CouponModel } from 'src/DB/Models/coupons.model';
 import { CouponRepository } from 'src/DB/repos/coupons.repo';
 import { SocketService } from 'src/socket/socket.service';
 import { SocketModule } from 'src/socket/socket.module';
+import { PaymentService } from 'src/common/services/payment/payment.service';
 
 @Module({
   controllers: [OrderController],
@@ -21,7 +22,8 @@ import { SocketModule } from 'src/socket/socket.module';
     CartRepository,
     ProductRepository,
     CouponRepository,
-    SocketService
+    SocketService,
+    PaymentService
   ],
   imports: [TokenModule, OrderModel, cartModel, ProductModel, CouponModel,SocketModule],
 })

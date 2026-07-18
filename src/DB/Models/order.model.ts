@@ -68,6 +68,9 @@ export class Order {
     ref: 'Coupon',
   })
   appliedCoupon?: string;
+
+  @Prop({ type: String })
+  paymentSession?: string;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

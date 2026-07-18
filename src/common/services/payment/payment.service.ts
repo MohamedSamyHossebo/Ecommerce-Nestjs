@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import Stripe from 'stripe';
 @Injectable()
 export class PaymentService {
@@ -13,6 +13,7 @@ export class PaymentService {
     discounts = [],
     metadata = {},
     line_items = [],
+    customer_email,
   }: Stripe.Checkout.SessionCreateParams) {
     const session = await this.stripe.checkout.sessions.create({
       line_items: line_items,
@@ -21,7 +22,16 @@ export class PaymentService {
       cancel_url: cancel_url,
       discounts: discounts,
       metadata: metadata,
+      customer_email: customer_email,
     });
     return session;
+  }
+
+  constructWebhookEvent(
+    payload: Buffer,
+    signature: string,
+    secret: string,
+  ): Stripe.Event {
+    return this.stripe.webhooks.constructEvent(payload, signature, secret);
   }
 }
