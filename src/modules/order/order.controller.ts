@@ -56,4 +56,12 @@ export class OrderController {
     const order = await this.orderService.cancelOrder(id, userId);
     return { message: 'Order cancelled successfully', order };
   }
+
+  @Patch(':id/refund')
+  @UseGuards(AuthGuard)
+  async refundOrder(@Param('id') id: string, @Req() req: any) {
+    const userId = req.user._id;
+    const order = await this.orderService.refundOrder(id, userId);
+    return { message: 'Order refunded successfully', order };
+  }
 }

@@ -212,6 +212,38 @@ export class OrderService {
     return order;
   }
 
+  async refundOrder(orderId: string, userId: string) {
+    const order = await this.orderRepo.findOne({ _id: orderId, user: userId });
+    if (!order) {
+      throw new BadRequestException('Order not found');
+    }
+
+    if (
+      order.status !== OrderStatus.PAID &&
+      order.status !== OrderStatus.PROCESSING
+    ) {
+      throw new BadRequestException(
+        `Cannot refund order in ${order.status} status`,
+      );
+    }
+
+    if (!order.paymentIntentId) {
+      throw new BadRequestException('Payment intent not found for this order');
+    }
+
+    await this.paymentService.refundPayment(order.paymentIntentId);
+
+    order.status = OrderStatus.REFUNDED;
+    for (const item of order.items) {
+      await this.productRepo.findByIdAndUpdate(item.product, {
+        $inc: { stock: item.qty },
+      });
+    }
+
+    await order.save();
+    return order;
+  }
+
   async handleWebhook(rawBody: Buffer, signature: string) {
     let event: Stripe.Event;
     try {
@@ -231,6 +263,7 @@ export class OrderService {
       if (!orderId) return;
       await this.orderRepo.findByIdAndUpdate(orderId, {
         status: OrderStatus.PAID,
+        paymentIntentId: session.payment_intent as string,
       });
     }
   }

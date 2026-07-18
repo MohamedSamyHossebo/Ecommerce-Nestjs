@@ -71,6 +71,9 @@ export class Order {
 
   @Prop({ type: String })
   paymentSession?: string;
+
+  @Prop({ type: String })
+  paymentIntentId?: string;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

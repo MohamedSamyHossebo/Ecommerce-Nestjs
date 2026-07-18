@@ -43,4 +43,10 @@ export class PaymentService {
       max_redemptions: 1,
     });
   }
+
+  async refundPayment(paymentIntentId: string) {
+    return this.stripe.refunds.create({
+      payment_intent: paymentIntentId,
+    });
+  }
 }
