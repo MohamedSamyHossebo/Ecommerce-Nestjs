@@ -25,11 +25,29 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('join')
   handleJoinRoom(
-    @MessageBody() roomName: string,
+    @MessageBody() payload: any,
     @ConnectedSocket() client: Socket,
   ) {
+    let roomName: string | undefined;
+
+    if (typeof payload === 'string') {
+      try {
+        const parsed = JSON.parse(payload);
+        roomName = parsed.roomName;
+      } catch (e) {
+        roomName = payload;
+      }
+    } else {
+      roomName = payload?.roomName;
+    }
+    
+    if (!roomName) {
+      console.log(`[Socket] Client ${client.id} failed to join! Payload was:`, payload);
+      return { status: 'error', message: 'roomName is missing' };
+    }
+
     client.join(roomName);
-    console.log(`Client ${client.id} joined room ${roomName}`);
+    console.log(`[Socket] Client ${client.id} joined room: "${roomName}"`);
     return {
       status: 'success',
       event: 'joined',

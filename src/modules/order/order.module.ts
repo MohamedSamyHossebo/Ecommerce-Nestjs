@@ -10,6 +10,8 @@ import { ProductRepository } from 'src/DB/repos/product.repo';
 import { ProductModel } from 'src/DB/Models/product.model';
 import { CouponModel } from 'src/DB/Models/coupons.model';
 import { CouponRepository } from 'src/DB/repos/coupons.repo';
+import { SocketService } from 'src/socket/socket.service';
+import { SocketModule } from 'src/socket/socket.module';
 
 @Module({
   controllers: [OrderController],
@@ -19,7 +21,8 @@ import { CouponRepository } from 'src/DB/repos/coupons.repo';
     CartRepository,
     ProductRepository,
     CouponRepository,
+    SocketService
   ],
-  imports: [TokenModule, OrderModel, cartModel, ProductModel, CouponModel],
+  imports: [TokenModule, OrderModel, cartModel, ProductModel, CouponModel,SocketModule],
 })
 export class OrderModule {}

@@ -7,6 +7,7 @@ import { ProductRepository } from 'src/DB/repos/product.repo';
 import { HCouponDocument } from 'src/DB/Models/coupons.model';
 import { CouponRepository } from 'src/DB/repos/coupons.repo';
 import { OrderStatus } from 'src/common/enums/order.enum';
+import { SocketService } from 'src/socket/socket.service';
 
 @Injectable()
 export class OrderService {
@@ -15,6 +16,7 @@ export class OrderService {
     private cartRepo: CartRepository,
     private productRepo: ProductRepository,
     private couponeRepo: CouponRepository,
+    private _socketService: SocketService,
   ) {}
   async checkout(createOrderDto: CreateOrderDto, userId: string) {
     const cart = await this.cartRepo.findOne({ user: userId });
@@ -67,9 +69,32 @@ export class OrderService {
     }
     const finalPrice = calculatedSubTotal - discountAmount;
     for (const item of orderItems) {
-      await this.productRepo.findByIdAndUpdate(item.product, {
-        $inc: { stock: -item.qty },
-      });
+      const updatedPrdouct = await this.productRepo.findByIdAndUpdate(
+        item.product,
+        {
+          $inc: { stock: -item.qty },
+        },
+      );
+
+      if (updatedPrdouct) {
+        if (updatedPrdouct.stock <= 5 && updatedPrdouct.stock > 0) {
+          this._socketService.emitToRoom('Admins', 'LowStock', {
+            productId: updatedPrdouct._id,
+            productName: updatedPrdouct.name,
+            stock: updatedPrdouct.stock,
+            message: `Only ${updatedPrdouct.stock} Items Left`,
+          });
+          console.log(`${updatedPrdouct.name} is now Out of Stock`);
+        }
+        if (updatedPrdouct.stock === 0) {
+          this._socketService.emitToAll('StockOut', {
+            productId: updatedPrdouct._id,
+            productName: updatedPrdouct.name,
+            stock: updatedPrdouct.stock,
+            message: `${updatedPrdouct.name} is now Out of Stock`,
+          });
+        }
+      }
     }
     if (targetCoupone) {
       await this.couponeRepo.findByIdAndUpdate(targetCoupone._id.toString(), {
@@ -114,13 +139,15 @@ export class OrderService {
     if (!order) {
       throw new BadRequestException('Order not found');
     }
-    
+
     if (order.status !== OrderStatus.PENDING) {
-      throw new BadRequestException(`Cannot cancel order in ${order.status} status`);
+      throw new BadRequestException(
+        `Cannot cancel order in ${order.status} status`,
+      );
     }
 
     order.status = OrderStatus.CANCELLED;
-    
+
     // Restock products
     for (const item of order.items) {
       await this.productRepo.findByIdAndUpdate(item.product, {
