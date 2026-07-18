@@ -3,6 +3,7 @@ import { Coupon } from './coupon.schema';
 import { CreateCouponInput } from './dto/create-coupon-inputs';
 import { UseGuards } from '@nestjs/common';
 import { RoleGuard } from 'src/common/guards/role/role.guard';
+import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 import { CouponsService } from '../coupons.service';
 import { UserRoleEnum } from 'src/common/enums/user.enum';
 import { UpdateCouponInput } from './dto/update-coupon-inputs';
@@ -12,13 +13,13 @@ export class CouponResolver {
   constructor(private readonly couponService: CouponsService) {}
 
   @Query(() => [Coupon], { name: 'getCoupons' })
-  @UseGuards(RoleGuard(UserRoleEnum.ADMIN))
+  @UseGuards(AuthGuard, RoleGuard(UserRoleEnum.ADMIN))
   async getCoupons() {
     return this.couponService.findAll();
   }
 
   @Mutation(() => Coupon, { name: 'createCoupon' })
-  @UseGuards(RoleGuard(UserRoleEnum.ADMIN))
+  @UseGuards(AuthGuard, RoleGuard(UserRoleEnum.ADMIN))
   async createCoupon(
     @Args('createCouponInput') createCouponInput: CreateCouponInput,
     @Context() context: any,
@@ -27,7 +28,7 @@ export class CouponResolver {
     return this.couponService.create(createCouponInput, id);
   }
   @Mutation(() => Coupon, { name: 'updateCoupon' })
-  @UseGuards(RoleGuard(UserRoleEnum.ADMIN))
+  @UseGuards(AuthGuard, RoleGuard(UserRoleEnum.ADMIN))
   async updateCoupon(
     @Args('updateCouponInput') updateCouponInput: UpdateCouponInput,
     @Context() context: any,
