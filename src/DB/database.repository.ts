@@ -82,9 +82,12 @@ export abstract class BaseRepository<T extends Document> {
     update: UpdateQuery<T>,
     options: QueryOptions = {},
   ) {
+    const finalUpdate = { ...update } as any;
+    finalUpdate.$inc = { ...finalUpdate.$inc, __v: 1 };
+
     return await this.model.updateOne(
       filter,
-      { ...update, $inc: { __v: 1 } },
+      finalUpdate,
       options as any,
     );
   }
@@ -94,9 +97,12 @@ export abstract class BaseRepository<T extends Document> {
     update: UpdateQuery<T>,
     options: QueryOptions = {},
   ): Promise<T | null> {
+    const finalUpdate = { ...update } as any;
+    finalUpdate.$inc = { ...finalUpdate.$inc, __v: 1 };
+
     return await this.model.findOneAndUpdate(
       filter,
-      { ...update, $inc: { __v: 1 } },
+      finalUpdate,
       { new: true, runValidators: true, ...options },
     );
   }
@@ -106,9 +112,12 @@ export abstract class BaseRepository<T extends Document> {
     update: UpdateQuery<T>,
     options: QueryOptions = {},
   ): Promise<T | null> {
+    const finalUpdate = { ...update } as any;
+    finalUpdate.$inc = { ...finalUpdate.$inc, __v: 1 };
+
     return await this.model.findByIdAndUpdate(
       id,
-      { ...update, $inc: { __v: 1 } },
+      finalUpdate,
       { new: true, runValidators: true, ...options },
     );
   }
