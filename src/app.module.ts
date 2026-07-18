@@ -19,6 +19,7 @@ import { OrderModule } from './modules/order/order.module';
 import { CacheModule } from './cache/cache.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { AppResolver } from './app.resolver';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -44,7 +45,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
-      context: ({ req, res }) => ({ req, res }),
+      context: ({ req }) => ({ req }),
     }),
     AuthModule,
     MailModule,
@@ -60,6 +61,6 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
     CacheModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,AppResolver],
 })
 export class AppModule {}
