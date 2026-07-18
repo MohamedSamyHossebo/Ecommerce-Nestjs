@@ -20,6 +20,7 @@ import { CacheModule } from './cache/cache.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AppResolver } from './app.resolver';
+import { SocketModule } from './socket/socket.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -47,6 +48,7 @@ import { AppResolver } from './app.resolver';
       sortSchema: true,
       context: ({ req }) => ({ req }),
     }),
+    SocketModule,
     AuthModule,
     MailModule,
     EventEmitterModule.forRoot(),
@@ -61,6 +63,6 @@ import { AppResolver } from './app.resolver';
     CacheModule,
   ],
   controllers: [AppController],
-  providers: [AppService,AppResolver],
+  providers: [AppService, AppResolver],
 })
 export class AppModule {}
