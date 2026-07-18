@@ -22,10 +22,20 @@ export class OrderService {
     private paymentService: PaymentService,
   ) {}
   async checkout(createOrderDto: CreateOrderDto, userId: string) {
-    const cart = await this.cartRepo.findOne({ user: userId });
-    if (!cart || cart.items.length === 0) {
-      throw new BadRequestException('Cart is empty');
+    const cart = await this.cartRepo.findOneAndUpdate(
+      { user: userId, isLocked: false, 'items.0': { $exists: true } },
+      { $set: { isLocked: true } },
+    );
+    if (!cart) {
+      const existingCart = await this.cartRepo.findOne({ user: userId });
+      if (!existingCart || existingCart.items.length === 0) {
+        throw new BadRequestException('Cart is empty');
+      }
+      throw new BadRequestException(
+        'Checkout already in progress, please wait',
+      );
     }
+    try {
     const orderItems: {
       product: string;
       qty: number;
@@ -151,14 +161,19 @@ export class OrderService {
       discounts: stripeDiscounts,
       metadata: { orderId: order._id.toString() },
     });
-    (order as any).paymentSession = session.url;
-    await order.save();
+      (order as any).paymentSession = session.url;
+      await order.save();
 
-    cart.items = [];
-    cart.totalPrice = 0;
-    await cart.save();
-    return { session: session.url, order };
-
+      cart.items = [];
+      cart.totalPrice = 0;
+      cart.isLocked = false;
+      await cart.save();
+      return { session: session.url, order };
+    } catch (error) {
+      cart.isLocked = false;
+      await cart.save();
+      throw error;
+    }
   }
 
   async getMyOrders(userId: string) {
@@ -187,7 +202,6 @@ export class OrderService {
 
     order.status = OrderStatus.CANCELLED;
 
-    // Restock products
     for (const item of order.items) {
       await this.productRepo.findByIdAndUpdate(item.product, {
         $inc: { stock: item.qty },

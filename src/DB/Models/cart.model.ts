@@ -47,6 +47,9 @@ export class Cart {
     
   @Prop({ default: 0 })
   totalItems!: number;
+
+  @Prop({ type: Boolean, default: false })
+  isLocked!: boolean;
 }
 
 export const cartSchema = SchemaFactory.createForClass(Cart);
