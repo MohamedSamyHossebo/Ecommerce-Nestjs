@@ -2,6 +2,38 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Coupon {
+  _id: String!
+  code: String!
+  createdBy: ID!
+  discountPercentage: Int!
+  expireDate: String!
+  maxUsage: Int!
+  usedBy: [ID!]!
+  usedCount: Int!
+}
+
+input CreateCouponInput {
+  code: String!
+  discountPercentage: Int!
+  expireDate: String!
+  maxUsage: Int!
+}
+
+type Mutation {
+  createCoupon(createCouponInput: CreateCouponInput!): Coupon!
+  updateCoupon(updateCouponInput: UpdateCouponInput!): Coupon!
+}
+
 type Query {
+  getCoupons: [Coupon!]!
   hello: String!
+}
+
+input UpdateCouponInput {
+  _id: String
+  code: String
+  discountPercentage: Int
+  expireDate: String
+  maxUsage: Int
 }
