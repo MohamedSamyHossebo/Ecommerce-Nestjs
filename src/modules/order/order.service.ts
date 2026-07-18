@@ -118,7 +118,7 @@ export class OrderService {
       status: OrderStatus.PENDING,
     });
     await order.populate('user');
-    const amount = order.totalPrice ?? order.subTotal ?? 0;
+
     const line_items = [
       {
         price_data: {
@@ -127,18 +127,28 @@ export class OrderService {
             name: `Order By ${(order.user as any)?.firstName} ${(order.user as any)?.lastName}`,
             description: `Order Address ${JSON.stringify(order.shippingAddress)}`,
           },
-          unit_amount: amount * 100,
+          unit_amount: calculatedSubTotal * 100,
         },
         quantity: 1,
       },
     ];
+
+    const stripeDiscounts: { coupon: string }[] = [];
+    if (targetCoupone) {
+      const stripeCoupon = await this.paymentService.createStripeCoupon(
+        targetCoupone.discountPercentage,
+        targetCoupone.code,
+      );
+      stripeDiscounts.push({ coupon: stripeCoupon.id });
+    }
+
     const session = await this.paymentService.checkoutSetion({
       customer_email: (order.user as any)?.email,
       line_items: line_items,
       success_url: process.env.SUCCESS_URL! as string,
       cancel_url: process.env.CANCEL_URL! as string,
       mode: 'payment',
-      discounts: [],
+      discounts: stripeDiscounts,
       metadata: { orderId: order._id.toString() },
     });
     (order as any).paymentSession = session.url;
@@ -148,6 +158,7 @@ export class OrderService {
     cart.totalPrice = 0;
     await cart.save();
     return { session: session.url, order };
+
   }
 
   async getMyOrders(userId: string) {

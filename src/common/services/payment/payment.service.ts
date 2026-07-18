@@ -34,4 +34,13 @@ export class PaymentService {
   ): Stripe.Event {
     return this.stripe.webhooks.constructEvent(payload, signature, secret);
   }
+
+  async createStripeCoupon(percentOff: number, couponCode: string) {
+    return this.stripe.coupons.create({
+      percent_off: percentOff,
+      duration: 'once',
+      name: couponCode,
+      max_redemptions: 1,
+    });
+  }
 }
