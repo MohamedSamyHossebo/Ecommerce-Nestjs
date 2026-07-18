@@ -5,12 +5,17 @@ import {
   HttpException,
   Logger,
 } from '@nestjs/common';
+import { GqlContextType } from '@nestjs/graphql';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
 
   catch(exception: any, host: ArgumentsHost) {
+    if (host.getType<GqlContextType>() === 'graphql') {
+      return exception;
+    }
+
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
