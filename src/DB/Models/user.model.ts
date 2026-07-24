@@ -99,6 +99,18 @@ export class User {
     default: UserRoleEnum.USER,
   })
   role!: string;
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  twoFactorEnabled!: boolean;
+  @Prop({
+    type: String,
+    select: false,
+  })
+  twoFactorSecret?: string;
+  @Prop({ select: false, type: [String], default: [] })
+  twoFactorBackupCodes!: string[];
 }
 export const UserSchema = SchemaFactory.createForClass(User);
 
