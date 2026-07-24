@@ -1,4 +1,5 @@
 import { Controller, Post, Body, Patch, UseGuards, Req } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterAuthDto } from './dto/create-auth.dto';
 import { VerifyEmailDto } from './dto/verify-email-dto';
@@ -84,7 +85,8 @@ export class AuthController {
   }
 
   @Post('2fa/verify-login')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 minutes
   async verify2FALogin(@Req() req: any, @Body() dto: VerifyTwoFactorLoginDto) {
     const result = await this.authService.verifyTwoFactorLogin(req.user._id, dto.code);
     return {
