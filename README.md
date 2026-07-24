@@ -41,7 +41,7 @@ A modern, high-performance, and feature-complete E-Commerce Backend API built wi
 - **Hybrid API Layer**: Full **RESTful API** endpoints alongside a **GraphQL API** (Apollo Server + NestJS GraphQL).
 - **Redis Caching**: High-speed caching layer using `ioredis` / Upstash Redis for optimal response times.
 - **Real-Time WebSockets**: Integrated `@nestjs/websockets` & `socket.io` for real-time notifications and updates.
-- **Event-Driven Architecture**: Decoupled asynchronous tasks using `@nestjs/event-emitter`.
+- **Background Jobs & Message Queues**: Robust background task processing and decoupled asynchronous architecture using `BullMQ` backed by Redis, replacing simple event-emitters for critical tasks like email delivery.
 - **Repository Pattern**: Generic `BaseRepository` abstracting Mongoose queries (`findById`, `findOneAndUpdate`, pagination, etc.).
 
 ---
@@ -59,6 +59,7 @@ A modern, high-performance, and feature-complete E-Commerce Backend API built wi
 | **Payments** | [Stripe API](https://stripe.com/) (`stripe` SDK) |
 | **Real-time** | [WebSockets](https://socket.io/) (`@nestjs/websockets` / `socket.io`) |
 | **Emails** | [Nodemailer](https://nodemailer.com/) + `@nestjs-modules/mailer` + EJS Templates |
+| **Background Jobs** | [BullMQ](https://bullmq.io/) |
 | **Testing & Linting** | Jest, ESLint, Prettier |
 
 ---
@@ -82,6 +83,9 @@ src/
 │   ├── modules/                  # Common Modules (Token, 2FA, Security)
 │   ├── security/                 # Encryption (AES-256), Hashing (Bcrypt/Argon2)
 │   └── services/                 # 2FA Service (TOTP, Backup Codes)
+├── infrastructure/               # Background Services & Queues
+│   ├── email/                    # BullMQ Email Producers, Processors, and Event Listeners
+│   └── queues/                   # Redis connection config & Queue Module
 └── modules/                      # Core Business Feature Modules
     ├── auth/                     # Authentication, Registration, 2FA, Password Reset
     ├── brand/                    # Brand Management
