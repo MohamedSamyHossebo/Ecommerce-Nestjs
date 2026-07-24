@@ -21,6 +21,8 @@ import {
 } from '../mail/mail.event-payloads';
 import { UserRepository } from 'src/DB/repos/user.repo';
 import { UserRoleEnum } from 'src/common/enums/user.enum';
+import { TwoFactorService } from 'src/common/services/2fa/two-factor.service';
+import { VerifyTwoFactorLoginDto } from './dto/two-factor.dto';
 
 @Injectable()
 export class AuthService {
@@ -28,6 +30,7 @@ export class AuthService {
     private readonly userRepo: UserRepository,
     private readonly eventEmitter: EventEmitter2,
     private readonly tokenService: TokenService,
+    private readonly twoFactorService: TwoFactorService,
   ) {}
 
   async register(registerAuthDto: RegisterAuthDto) {
@@ -38,10 +41,9 @@ export class AuthService {
       throw new ConflictException('Email already exists');
     }
 
-    // generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedOTP = await hash(otp);
-    const expireTime = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
+    const expireTime = new Date(Date.now() + 10 * 60 * 1000);
 
     console.log('Generated OTP:', otp);
     const savedUser = await this.userRepo.create({
@@ -100,7 +102,7 @@ export class AuthService {
     }
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedOTP = await hash(otp);
-    const expireTime = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
+    const expireTime = new Date(Date.now() + 10 * 60 * 1000); 
 
     console.log('Generated OTP:', otp);
     user.confirmEmailOTP = hashedOTP;
@@ -114,22 +116,7 @@ export class AuthService {
     );
   }
 
-  async login(loginAuthDto: LoginAuthDto) {
-    const user = await this.userRepo.findOne({ email: loginAuthDto.email });
-    if (!user) {
-      throw new ConflictException('User not found');
-    }
-    if (!user.confirmEmail) {
-      throw new ConflictException('Email is not verified');
-    }
-    const isPasswordValid = await verifyHash({
-      plainText: loginAuthDto.password,
-      cipherText: user.password,
-    });
-    if (!isPasswordValid) {
-      throw new ConflictException('Invalid password');
-    }
-
+  async generateAuthTokens(user: any) {
     const isAdmin = user.role === UserRoleEnum.ADMIN;
 
     const accessSecret = isAdmin
@@ -166,6 +153,62 @@ export class AuthService {
     };
   }
 
+  async login(loginAuthDto: LoginAuthDto) {
+    const user = await this.userRepo.findOne({ email: loginAuthDto.email });
+    if (!user) {
+      throw new ConflictException('User not found');
+    }
+    if (!user.confirmEmail) {
+      throw new ConflictException('Email is not verified');
+    }
+    const isPasswordValid = await verifyHash({
+      plainText: loginAuthDto.password,
+      cipherText: user.password,
+    });
+    if (!isPasswordValid) {
+      throw new ConflictException('Invalid password');
+    }
+
+    if (user.twoFactorEnabled) {
+      return {
+        is2FARequired: true,
+        userId: user._id,
+        message: 'Please enter your 2FA code or backup code to complete login',
+      };
+    }
+
+    return this.generateAuthTokens(user);
+  }
+
+  async verifyTwoFactorLogin(userId: string, code: string) {
+    const user = await this.userRepo.findOne({ _id: userId });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (!user.twoFactorEnabled) {
+      throw new BadRequestException('2FA is not enabled for this user');
+    }
+
+    const isTotpValid = await this.twoFactorService.verifyTwoFactorCode(
+      userId,
+      code,
+    );
+
+    let isValid = isTotpValid;
+    if (!isValid) {
+      isValid = await this.twoFactorService.verifyBackupCode(
+        userId,
+        code,
+      );
+    }
+
+    if (!isValid) {
+      throw new BadRequestException('Invalid 2FA code or backup code');
+    }
+
+    return this.generateAuthTokens(user);
+  }
+
   async forgetPassword(forgetPasswordDto: ForgetPasswordDto) {
     const user = await this.userRepo.findOne({
       email: forgetPasswordDto.email,
@@ -181,7 +224,7 @@ export class AuthService {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedOTP = await hash(otp);
-    const expireTime = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
+    const expireTime = new Date(Date.now() + 10 * 60 * 1000); 
 
     user.forgetPasswordOTP = hashedOTP;
     user.forgetPasswordOTPExpiresAt = expireTime;

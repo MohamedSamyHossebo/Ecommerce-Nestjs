@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch } from '@nestjs/common';
+import { Controller, Post, Body, Patch, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterAuthDto } from './dto/create-auth.dto';
 import { VerifyEmailDto } from './dto/verify-email-dto';
@@ -6,10 +6,20 @@ import { ResendOTPDto } from './dto/resend-otp.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { TwoFactorService } from 'src/common/services/2fa/two-factor.service';
+import { AuthGuard } from 'src/common/guards/auth/auth.guard';
+import {
+  EnableTwoFactorDto,
+  VerifyTwoFactorLoginDto,
+  DisableTwoFactorDto,
+} from './dto/two-factor.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly twoFactorService: TwoFactorService,
+  ) {}
 
   @Post('register')
   async signup(@Body() registerAuthDto: RegisterAuthDto) {
@@ -45,6 +55,52 @@ export class AuthController {
       message: 'User logged in successfully',
       data: result,
     };
+  }
+
+  @Post('2fa/generate')
+  @UseGuards(AuthGuard)
+  async generate2FASecret(@Req() req: any) {
+    const result = await this.twoFactorService.generateSecret(
+      req.user._id,
+      req.user.email,
+    );
+    return {
+      message: '2FA secret and QR code generated successfully',
+      data: result,
+    };
+  }
+
+  @Post('2fa/enable')
+  @UseGuards(AuthGuard)
+  async enable2FA(@Req() req: any, @Body() dto: EnableTwoFactorDto) {
+    const result = await this.twoFactorService.enableTwoFactor(
+      req.user._id,
+      dto.code,
+    );
+    return {
+      message: '2FA enabled successfully. Store your backup codes safely!',
+      data: result,
+    };
+  }
+
+  @Post('2fa/verify-login')
+  @UseGuards(AuthGuard)
+  async verify2FALogin(@Req() req: any, @Body() dto: VerifyTwoFactorLoginDto) {
+    const result = await this.authService.verifyTwoFactorLogin(req.user._id, dto.code);
+    return {
+      message: '2FA verification successful',
+      data: result,
+    };
+  }
+
+  @Post('2fa/disable')
+  @UseGuards(AuthGuard)
+  async disable2FA(@Req() req: any, @Body() dto: DisableTwoFactorDto) {
+    const result = await this.twoFactorService.disableTwoFactor(
+      req.user._id,
+      dto.code,
+    );
+    return result;
   }
 
   @Post('forget-password')
