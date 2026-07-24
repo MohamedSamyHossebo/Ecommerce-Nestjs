@@ -22,12 +22,16 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AppResolver } from './app.resolver';
 import { SocketModule } from './socket/socket.module';
+import { BullModule } from '@nestjs/bullmq';
+
 @Module({
   imports: [
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     ConfigModule.forRoot({
       envFilePath: resolve('./config/.env.dev'),
       isGlobal: true,
@@ -53,10 +57,10 @@ import { SocketModule } from './socket/socket.module';
       sortSchema: true,
       context: ({ req }) => ({ req }),
     }),
+    EventEmitterModule.forRoot(),
     SocketModule,
     AuthModule,
     MailModule,
-    EventEmitterModule.forRoot(),
     UserModule,
     CategoryModule,
     BrandModule,

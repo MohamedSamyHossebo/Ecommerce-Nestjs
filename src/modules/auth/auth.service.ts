@@ -23,6 +23,7 @@ import { UserRepository } from 'src/DB/repos/user.repo';
 import { UserRoleEnum } from 'src/common/enums/user.enum';
 import { TwoFactorService } from 'src/common/services/2fa/two-factor.service';
 import { VerifyTwoFactorLoginDto } from './dto/two-factor.dto';
+import { EmailProducer } from 'src/infrastructure/email/email.producer';
 
 @Injectable()
 export class AuthService {
@@ -31,6 +32,7 @@ export class AuthService {
     private readonly eventEmitter: EventEmitter2,
     private readonly tokenService: TokenService,
     private readonly twoFactorService: TwoFactorService,
+    private readonly emailProducer: EmailProducer,
   ) {}
 
   async register(registerAuthDto: RegisterAuthDto) {
@@ -51,11 +53,13 @@ export class AuthService {
       confirmEmailOTP: hashedOTP,
       otpExpiresAt: expireTime,
     });
+    // add new job to send verification otp
+    this.emailProducer.sendRegistrationEmail({
+      to: savedUser.email,
+      name: savedUser.firstName, 
+      code: otp,
+    });
 
-    this.eventEmitter.emit(
-      MailEvents.SEND_VERIFICATION_OTP,
-      new SendVerificationOtpEvent(savedUser.email, otp),
-    );
     return savedUser;
   }
 
@@ -102,7 +106,7 @@ export class AuthService {
     }
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedOTP = await hash(otp);
-    const expireTime = new Date(Date.now() + 10 * 60 * 1000); 
+    const expireTime = new Date(Date.now() + 10 * 60 * 1000);
 
     console.log('Generated OTP:', otp);
     user.confirmEmailOTP = hashedOTP;
@@ -196,10 +200,7 @@ export class AuthService {
 
     let isValid = isTotpValid;
     if (!isValid) {
-      isValid = await this.twoFactorService.verifyBackupCode(
-        userId,
-        code,
-      );
+      isValid = await this.twoFactorService.verifyBackupCode(userId, code);
     }
 
     if (!isValid) {
@@ -224,7 +225,7 @@ export class AuthService {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedOTP = await hash(otp);
-    const expireTime = new Date(Date.now() + 10 * 60 * 1000); 
+    const expireTime = new Date(Date.now() + 10 * 60 * 1000);
 
     user.forgetPasswordOTP = hashedOTP;
     user.forgetPasswordOTPExpiresAt = expireTime;
